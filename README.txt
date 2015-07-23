@@ -1,9 +1,14 @@
-README
-Version 1.1.0
+Version 1.1.1
 
 ************************************
 
 Use of this code implies you have accepted the terms of the license in license.txt.
+If you use the code for a publication, please cite:
+Discovering pathways by orienting edges in protein interaction networks.
+Anthony Gitter, Judith Klein-Seetharaman, Anupam Gupta, and Ziv Bar-Joseph.
+Nucl. Acids Res. (2011) 39 (4): e22 doi:10.1093/nar/gkq1207
+http://nar.oxfordjournals.org/content/39/4/e22.full
+
 The code requires Java 5.0 or above.
 
 A properties file is used to specify which orientation algorithm to run, which
