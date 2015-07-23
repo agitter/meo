@@ -6,12 +6,14 @@ edge.output.file = ../sampleEdge.out
 path.output.file = ../samplePath.out
 
 # Max path length of 5 or fewer is recommended, especially for MINSAT and MAXCSP
+# or large networks
 max.path.length = 5
 
 # Should local search be performed after finding an initial orientation {Yes, No}
 local.search = Yes
 
 # The orientation algorithm to use {Random, MINSAT, MAXCSP}
+# MINSAT is disabled by default, see README.txt
 alg = Random
 
 # The number of random restarts (the best solution will be used)

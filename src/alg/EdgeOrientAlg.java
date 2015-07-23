@@ -34,10 +34,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
 
-import lpsolve.LpSolve;
-import lpsolve.LpSolveException;
+//import lpsolve.LpSolve;
+//import lpsolve.LpSolveException;
 
 /**
  * Runs the edge orientation algorithm of choice.
@@ -268,6 +269,8 @@ public class EdgeOrientAlg {
 	 * @return the max global score - the value of the LP objective function
 	 * @throws LpSolveException
 	 */
+	// Remove references to LpSolve
+	/*
 	public double lpValue() throws LpSolveException
 	{
 		// Make sure that the paths and conflict edges
@@ -405,7 +408,7 @@ public class EdgeOrientAlg {
 
 		return lpValMax;
 	}
-	
+	*/
 	
 	
 	
@@ -422,10 +425,13 @@ public class EdgeOrientAlg {
 	 * @return the global score
 	 * @throws LpSolveException
 	 */
+	// Remove references to LpSolve
+	/*
 	public double minSatSln() throws LpSolveException
 	{
 		return minSatSln(BERTSIMAS_ROUND_RESTARTS);
 	}
+	*/
 
 
 	/**
@@ -442,6 +448,8 @@ public class EdgeOrientAlg {
 	 * @return the global score
 	 * @throws LpSolveException
 	 */
+	// Remove references to LpSolve
+	/*
 	public double minSatSln(int randRoundItr) throws LpSolveException
 	{
 		// Make sure that the paths and conflict edges
@@ -597,6 +605,7 @@ public class EdgeOrientAlg {
 
 		return bestGlobal;
 	}
+	*/
 
 
 	/**
@@ -1001,6 +1010,26 @@ public class EdgeOrientAlg {
 	}
 	
 	/**
+	 * Return a new list containing only satisfied (connected) paths.  Finds all
+	 * paths first if they have not been found already.
+	 * @return
+	 */
+	public ArrayList<Path> getSatisfiedPaths()
+	{
+		ArrayList<Path> satisfied = new ArrayList<Path>();
+		
+		for(Path p : getPaths())
+		{
+			if(p.isConnected())
+			{
+				satisfied.add(p);
+			}
+		}
+		
+		return satisfied;
+	}
+	
+	/**
 	 * Must be called after the state of the graph
 	 * has been changed to maintain consistency
 	 * among data structures.  Updates
@@ -1252,9 +1281,72 @@ public class EdgeOrientAlg {
 	public void printPathsEdges(String paths, String edges) throws IOException
 	{
 		printPaths(paths);
+		writePathEdges(edges);
 		
-		PrintWriter writer = new PrintWriter(new FileWriter(edges));
-		graph.writeEdges(writer);
-		writer.close();
+		// Deprecate the legacy edge output format, which does not output
+		// the edge weight and uses less standard notation for directed
+		// and undirected edges
+//		PrintWriter writer = new PrintWriter(new FileWriter(edges));
+//		graph.writeEdges(writer);
+//		writer.close();
+	}
+	
+	/**
+	 * Write all edges that are on a source-target path.  It also
+	 * specifies if the edge was originally undirected or directed (protein-protein or
+	 * protein-DNA), if it is presently oriented, and its weight.  Finds paths
+	 * if they have not already been found.  Only uses satisfied paths.
+	 * @param outFile
+	 */
+	public void writePathEdges(String outFile)
+	{
+		if(paths == null)
+		{
+			findPaths();
+		}
+		
+		try
+		{
+			HashSet<Edge> pathEdges = new HashSet<Edge>();
+			
+			// Iterate through all satisfied paths and add the edges on the path
+			for(Path curPath : getSatisfiedPaths())
+			{
+				for(Edge curEdge : curPath.getEdges())
+				{
+					pathEdges.add(curEdge);
+				}
+			}
+			
+			PrintWriter writer = new PrintWriter(new FileWriter(outFile));
+			writer.println("Source\tType\tTarget\tOriented\tWeight");
+			
+			for(DirEdge dEdge : graph.getDirEdges())
+			{
+				if(pathEdges.contains(dEdge))
+				{
+					String src = dEdge.getSource().getName();
+					String targ = dEdge.getTarget().getName();
+					
+					writer.println(src + "\tpd\t" + targ + "\t" + dEdge.isOriented() + "\t" + dEdge.getWeight());
+				}
+			}
+			
+			for(UndirEdge uEdge : graph.getUndirEdges())
+			{
+				if(pathEdges.contains(uEdge))
+				{
+					String src = uEdge.getSource().getName();
+					String targ = uEdge.getTarget().getName();
+					
+					writer.println(src + "\tpp\t" + targ + "\t" + uEdge.isOriented() + "\t" + uEdge.getWeight());
+				}
+			}
+			writer.close();
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 }

@@ -1,5 +1,5 @@
 README
-Version 1.0.0
+Version 1.1.0
 
 ************************************
 
@@ -14,17 +14,23 @@ below) is included to preprocess BioGRID PPI such that they are in the required
 format.  The character '_' should not appear in any gene names in any files because
 it is a reserved special character.
 
-The usage of the orientation algorithms is:
-EOMain <properties_file>
+The usage of the orientation algorithms from the JAR file is:
+java -jar EOMain.jar <properties_file>
 
 The file specified by the edge.output.file property will contain all edges in the
-network and their orientation.  The source always appears in the first column and
-the target is in the third.  The second column is --- or --> depending on whether
-the edge is undirected or directed in the original network.
+network that are on satisfied paths, which excludes edges that only appear on paths
+in which the source and target are disconnected due to one or more of the edge
+orientations.  The edges are annotated as pp for edges that were undirected in the
+original network and pd for edges that were originally directed.  The oriented column
+specifies whether the edge orientation was fixed, and the weight is the edge weight
+in the input network.
 
 The file specified by the path.output.file property lists all paths found
 in the original unoriented network, their weights, and whether they are
-satisfied after the orientation.
+satisfied after the orientation.  By filtering the unsatisfied paths and sorting the
+satisfied paths, it is possible to select an arbitrary number of top paths.  Varying
+the number of top paths provides a way to tune the size of the oriented network.  The
+highest-scoring paths represent the highest-confidence source-target connections.
 
 The MIN-k-SAT-based orientation algorithm relies on the lp_solve Mixed Integer Linear
 Programming solver, which is not distributed with our Java code and can be downloaded at
@@ -36,8 +42,11 @@ is unsuccessful, it is possible to add the lp_solve wrapper source code directly
 of using the JAR.  This enables you to manually specify the location of the lp_solve
 libraries.  In LpSolve.java, you can replace line 275 with two calls
 to System.load(), one with the absolute path to liblpsolve55.so and the other to liblpsolve55j.so.
-If you only wish to run the other orientation algorithms without installing lp_solve, you may
-safely comment out or delete all references to lp_solve in EOMain.java and EdgeOrientAlg.java.
+
+Due to user feedback, the lp_solve dependency was removed in version 1.1.0 of the network
+orientation code, which disables the MIN-k-SAT orientation.  The lp_solve links still exist
+but have been commented out of EdgeOrientAlg.java, EOMain.java, and Path.java.  These can be
+restored to re-enable the MIN-k-SAT orientation.
 
 The MAX-k-CSP-based algorithm uses toulbar2, which is described at
 http://carlit.toulouse.inra.fr/cgi-bin/awki.cgi/ToolBarIntro and available for download at

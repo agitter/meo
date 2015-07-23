@@ -143,6 +143,11 @@ public abstract class Edge {
 		return orientation;
 	}
 	
+	public boolean isOriented()
+	{
+		return (!(orientation == UNORIENTED));
+	}
+	
 	public boolean isFixed()
 	{
 		return fixed;

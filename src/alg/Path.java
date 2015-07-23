@@ -263,6 +263,11 @@ public class Path {
 		return vertices;
 	}
 	
+	public Edge[] getEdges()
+	{
+		return edges;
+	}
+	
 	/**
 	 * 
 	 * @return the number of edges in the path

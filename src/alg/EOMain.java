@@ -32,7 +32,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import lpsolve.LpSolveException;
+//import lpsolve.LpSolveException;
 
 /**
  * Contains the main method for edge orientation.  Runs the orientation
@@ -114,6 +114,8 @@ public class EOMain
 					orient.randSln(restarts);
 				}
 			}
+			// Remove references to LpSolve
+			/*
 			else if(alg.equalsIgnoreCase("MINSAT") || alg.equalsIgnoreCase("MIN-SAT"))
 			{
 				// MIN-k-SAT was chosen
@@ -131,6 +133,7 @@ public class EOMain
 					orient.localSearchSln();
 				}
 			}
+			*/
 			else if(alg.equalsIgnoreCase("MAXCSP") || alg.equalsIgnoreCase("MAX-CSP"))
 			{
 				// MAX-k-CSP was chosen

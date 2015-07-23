@@ -55,7 +55,7 @@ public class PPI {
 		String intermedFile = args[2];
 		String outFile = args[3];
 
-		prepBioGrid(bioGridFile, exprTypeFile, intermedFile);
+		prepBioGrid(bioGridFile, exprTypeFile, intermedFile);	
 		ppiEvidenceToEda(intermedFile, "", outFile, exprTypeFile);
 	}
 
@@ -152,7 +152,7 @@ public class PPI {
 				info.setTypeOrder(typeOrd);
 				writer.println(info);
 			}
-			writer.close();
+			writer.close();			
 		}
 		catch(IOException e)
 		{
@@ -164,7 +164,7 @@ public class PPI {
 	/**
 	 * Checks that the interaction is not a self-loop and is not based on one of the
 	 * ignored types of experiments.
-	 * Uncomment the condition below to check if the interaction
+	 * Uncomment the condition below to check if the interaction 
 	 * is between two yeast proteins (taxonomy id 4932)
 	 * @param intParts
 	 * @param exprTypes
@@ -250,8 +250,8 @@ public class PPI {
 					throw new IllegalArgumentException("Confidence of " + parts[1] + " is " + parts[2]);
 				}
 				typeMap.put(parts[1].toUpperCase(), Double.valueOf(conf));
-			}
-			typeReader.close();
+			}			
+			typeReader.close();			
 
 			PrintWriter writer = new PrintWriter(new FileWriter(edaFile));
 
@@ -265,7 +265,7 @@ public class PPI {
 					writer.println(line);
 				}
 				existReader.close();
-			}
+			}			
 			// Only need a heading if writing a true .eda file
 //			else
 //			{
