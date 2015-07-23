@@ -1,0 +1,25 @@
+Affinity Capture-Luminescence	Affinity Capture-Luminescence	0.5
+Affinity Capture-MS	Affinity Capture-MS	0.5
+Affinity Capture-RNA	Affinity Capture-RNA	0.7
+Affinity Capture-Western	Affinity Capture-Western	0.5
+Biochemical Activity	Biochemical Activity	0.5
+Co-crystal Structure	Co-crystal Structure	0.99
+Co-fractionation	Co-fractionation	0.7
+Co-localization	Ignore	0
+Co-purification	Co-purification	0.7
+Dosage Growth Defect	Ignore	0
+Dosage Lethality	Ignore	0
+Dosage Rescue	Ignore	0
+Far Western	Far Western	0.5
+FRET	FRET	0.7
+PCA	PCA	0.3
+Phenotypic Enhancement	Ignore	0
+Phenotypic Suppression	Ignore	0
+Protein-peptide	Protein-peptide	0.7
+Protein-RNA	Protein-RNA	0.3
+Reconstituted Complex	Reconstituted Complex	0.3
+Synthetic Growth Defect	Ignore	0.3
+Synthetic Haploinsufficiency	Ignore	0
+Synthetic Lethality	Ignore	0
+Synthetic Rescue	Ignore	0
+Two-hybrid	Two-hybrid	0.3
