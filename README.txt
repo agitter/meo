@@ -9,7 +9,8 @@ Anthony Gitter, Judith Klein-Seetharaman, Anupam Gupta, and Ziv Bar-Joseph.
 Nucl. Acids Res. (2011) 39 (4): e22 doi:10.1093/nar/gkq1207
 http://nar.oxfordjournals.org/content/39/4/e22.full
 
-The code requires Java 5.0 or above.
+The code requires Java 5.0 or above.  See FAQ.md for frequently asked questions
+and their answers.
 
 A properties file is used to specify which orientation algorithm to run, which
 parameters to use, and which data to run.  See sample.props for an example and 
