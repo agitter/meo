@@ -16,11 +16,11 @@
 ## <a id='rankpaths'>Path ranking metrics</a>
 **Q:** What are the path ranking metrics?
 
-**A:** Each of the metrics represents a different way of sorting paths to obtain the k top-ranked paths after orienting the network.  For example, suppose the oriented network contains 100,000 valid source-target paths and you want to evaluate only the 100 highest-confident paths.  The different metrics are computed for a single path, and then you can sort paths based on those metrics.  The metrics used in the MEO evaluation were:
+**A:** Each of the metrics represents a different way of sorting paths to obtain the k top-ranked paths after orienting the network.  The metrics used in the MEO evaluation were:
 - Path weight: the product of all vertex, edge, and target scores along the path 
-- Edge weight: the edge weights for the edges along the path; report the maximum, minimum, or average weight over the paths' edges 
-- Edge use: the number of valid paths the edge is used in (an indirect measure of edge importance); report the maximum, minimum, or average over the paths' edges
-- Vertex degree: the degree of the vertices along the path; report the maximum, minimum, or average over the paths' vertices
+- Edge weight: the edge weights for the edges along the path; compute the maximum, minimum, or average weight over the path's edges 
+- Edge use: the number of valid paths in which the edge is used (an indirect measure of edge importance); compute the maximum, minimum, or average over the path's edges
+- Vertex degree: the degree of the vertices along the path; compute the maximum, minimum, or average over the path's vertices
 
 
 ## <a id='runtime'>Runtime</a>
@@ -32,4 +32,4 @@
 ## <a id='evaluation'>Gold standard evaluation</a>
 **Q:** How can I evaluate my algorithm using the reference pathways used to test MEO?
 
-**A:** The MEO evaluation used signaling pathways from KEGG and Science Signaling.  However, the Science Signaling Database of Cell Signaling Archive graphical interface was archived in June 2015.  Contact Anthony Gitter for an archived version of the pathways used in the MEO evaluation.
+**A:** The MEO evaluation used signaling pathways from KEGG and Science Signaling.  However, the Science Signaling Database of Cell Signaling graphical interface was archived in June 2015.  Contact Anthony Gitter for an archived version of the pathways used in the MEO evaluation.
