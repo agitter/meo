@@ -45,13 +45,13 @@ import lpsolve.LpSolveException;
 
 public class Path {
 
-	/** Paths with optimal weight below this threshold are considered 
+	/** Paths with optimal weight below this threshold are considered
 	 * weak and are ignored */
 	protected static final double WEIGHT_THRESHOLD = 0.0;
 
 	/** The Graph that contains this Path */
 	Graph graph;
-	
+
 	/** The edges from source to target in order */
 	protected Edge[] edges;
 	/** Stores the direction (aka orientation) each edge needs to take in order
@@ -60,28 +60,39 @@ public class Path {
 	protected Vertex[] vertices;
 	/** The number of edges */
 	protected int length;
-	
+
 	// These variables are all calculated once upon Path creation and cached.
 	// There are used by the various comparators
 	protected double cachedMaxWeight;
 	protected double cachedMaxEdgeWeight;
 	protected double cachedAvgEdgeWeight;
 	protected double cachedMinEdgeWeight;
+	// The EdgeTarg weights incorporate all edge weights as well as the target weight
+	protected double cachedMaxEdgeTargWeight;
+	protected double cachedAvgEdgeTargWeight;
+	protected double cachedMinEdgeTargWeight;
 	/** Must be updated after an edge orientation algorithm is run */
 	protected int cachedMaxEdgeUses;
 	/** Must be updated after an edge orientation algorithm is run */
 	protected double cachedAvgEdgeUses;
 	/** Must be updated after an edge orientation algorithm is run */
 	protected int cachedMinEdgeUses;
+	// The Sat edge use metrics only count satisfied paths
+	/** Must be updated after an edge orientation algorithm is run */
+	protected int cachedMaxSatEdgeUses;
+	/** Must be updated after an edge orientation algorithm is run */
+	protected double cachedAvgSatEdgeUses;
+	/** Must be updated after an edge orientation algorithm is run */
+	protected int cachedMinSatEdgeUses;
 	protected int cachedMaxDegree;
 	protected double cachedAvgDegree;
 	protected int cachedMinDegree;
-	
+
 
 	public Path(Graph graph, List<Edge> eStack, List<Vertex> vStack)
 	{
 		this.graph = graph;
-		
+
 		length = eStack.size();
 		edges = new Edge[length];
 		edgeDirs = new int[length];
@@ -110,7 +121,7 @@ public class Path {
 		// including max weight, edge uses, and vertex degree
 		updateCachedStats();
 	}
-	
+
 	/**
 	 * Calculate and initialize cached path statistics
 	 * including max weight, edge uses, and vertex degree
@@ -121,12 +132,12 @@ public class Path {
 		// Calculate and cache the optimal weight.  Changes in edge
 		// direction don't affect the optimal weight.
 		cachedMaxWeight = calcMaxWeight();
-		
-		updateEdgeWeightStats();		
+
+		updateEdgeWeightStats();
 		updateEdgeUses();
 		updateDegreeStats();
 	}
-	
+
 	/**
 	 * Returns the path's maximum weight, the weight it would have if all
 	 * edges along the path are oriented correctly.  This method should only
@@ -152,15 +163,15 @@ public class Path {
 
 		return w;
 	}
-	
+
 	/**
 	 * Update the cached max edge uses, average edge uses,
 	 * and min edge uses values.  Needs to be called
 	 * after the edge orientation in the Graph is changed.
-	 * 
+	 *
 	 * Uses numConsistentPaths for each Edge in the path to
 	 * obtain the number of uses.
-	 * 
+	 *
 	 * Considers all paths, not just paths that are connected from
 	 * source to target.
 	 */
@@ -169,7 +180,7 @@ public class Path {
 		int max = Integer.MIN_VALUE;
 		int min = Integer.MAX_VALUE;
 		double sum = 0;
-		
+
 		for(Edge curEdge : edges)
 		{
 			int uses = curEdge.numConsistentPaths();
@@ -183,13 +194,13 @@ public class Path {
 			}
 			sum += uses;
 		}
-		
+
 		cachedMaxEdgeUses = max;
 		cachedMinEdgeUses = min;
 		cachedAvgEdgeUses = sum / getNumEdges();
 	}
 
-	
+
 	/**
 	 * Calculate and store the max, average, and minimum edge weight
 	 * of edges along the path
@@ -200,7 +211,7 @@ public class Path {
 		double max = Double.MIN_VALUE;
 		double min = Double.MAX_VALUE;
 		double sum = 0;
-		
+
 		for(Edge curEdge : edges)
 		{
 			double weight = curEdge.getWeight();
@@ -214,12 +225,12 @@ public class Path {
 			}
 			sum += weight;
 		}
-		
+
 		cachedMaxEdgeWeight = max;
 		cachedMinEdgeWeight = min;
 		cachedAvgEdgeWeight = sum / getNumEdges();
 	}
-	
+
 	/**
 	 * Calculate and store the max, average, and minimum vertex degree
 	 * of vertices along the path
@@ -230,7 +241,7 @@ public class Path {
 		int max = Integer.MIN_VALUE;
 		int min = Integer.MAX_VALUE;
 		double sum = 0;
-		
+
 		for(Vertex curVert : vertices)
 		{
 			// Cache degrees that have already been calculated
@@ -246,46 +257,46 @@ public class Path {
 			}
 			sum += uses;
 		}
-		
+
 		cachedMaxDegree = max;
 		cachedMinDegree = min;
 		cachedAvgDegree = sum / getNumVertices();
 	}
-	
-	
+
+
 	public Vertex getTarget()
 	{
 		return vertices[length];
 	}
-	
+
 	public Vertex[] getVertices()
 	{
 		return vertices;
 	}
-	
+
 	public Edge[] getEdges()
 	{
 		return edges;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return the number of edges in the path
 	 */
 	public int getNumEdges()
 	{
 		return length;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return the number of vertices in the path
 	 */
 	public int getNumVertices()
 	{
 		return length + 1;
 	}
-	
+
 	/**
 	 * A path's weight is the product of the weights of all vertices and edges
 	 * along it as well as the target vertex's weight if all edges are
@@ -326,7 +337,7 @@ public class Path {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if there are conflicts on any of the edges in this path
 	 */
 	public boolean hasConflicts()
@@ -342,7 +353,7 @@ public class Path {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if all edges along the path are oriented in the direction
 	 * the path wants
 	 */
@@ -382,7 +393,7 @@ public class Path {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if this path's optimal weight is below the
 	 * preset weight threshold
 	 */
@@ -390,8 +401,8 @@ public class Path {
 	{
 		return maxWeight() < WEIGHT_THRESHOLD;
 	}
-	
-	
+
+
 	/**
 	 * Unconditionally removes this path from all
 	 * edge associations.  Use only when the path is
@@ -405,8 +416,8 @@ public class Path {
 			e.removePath(this);
 		}
 	}
-	
-	
+
+
 	/**
 	 * Returns true if the paths are the same length and
 	 * every Vertex along both paths has the same name and
@@ -421,7 +432,7 @@ public class Path {
 		{
 			return false;
 		}
-		
+
 		// We now know the lengths are the same
 		Vertex[] otherVertices = otherPath.getVertices();
 		for(int l = 0; l <= length; l++)
@@ -431,11 +442,11 @@ public class Path {
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
-	
-	
+
+
 
 	/**
 	 * Add a constraint to the lp_solve linear program for every conflict
@@ -492,8 +503,8 @@ public class Path {
 
 		} // end loop through all edges in path
 	}
-	
-	
+
+
 	/**
 	 * Write a relation in the XCSP 2.1 format.  The relation will have
 	 * the default cost of the path weight, which is the cost that
@@ -501,7 +512,7 @@ public class Path {
 	 * edge orienations.  Only one tuple is needed for the 0 cost
 	 * orientation that connects the path.  If a variable is 1 that
 	 * means it is oriented forward.
-	 * 
+	 *
 	 * @param writer
 	 * @param pathIndex
 	 */
@@ -509,10 +520,10 @@ public class Path {
 	{
 		// The arity is the number of conflict edges (variables) in the path
 		int arity = 0;
-		
+
 		// Stores the values the tuple must take to satisfy the path
 		StringBuffer tupleBuf = new StringBuffer();
-		
+
 		for(int e = 0; e < length; e++)
 		{
 			// Check if this edge is a conflict edge
@@ -527,13 +538,13 @@ public class Path {
 					throw new IllegalStateException("Edge " + e + " has illegal " +
 							"id " + edgeIndex);
 				}
-				
+
 				// The first value is not preceeded by a space
 				if(arity >= 1)
 				{
 					tupleBuf.append(" ");
 				}
-				
+
 				arity++;
 
 				// Add the correct variable value in the tuple depending
@@ -554,39 +565,39 @@ public class Path {
 				}
 			}
 		} // end loop through all edges in path
-		
+
 		if(arity < 1)
 		{
 			throw new IllegalStateException("Path " + toString() + " is not a conflict path");
 		}
-		
+
 		// Construct the relation tag
 		StringBuffer buf = new StringBuffer("<relation name=\"R");
 		buf.append(pathIndex);
-		
+
 		buf.append("\" arity=\"");
 		buf.append(arity);
-		
+
 		buf.append("\" nbTuples=\"1\" semantics=\"soft\" defaultCost=\"");
 		buf.append(Math.round(cachedMaxWeight * 1000));
-		
+
 		// The tuple for the correct orientation has 0 cost
 		buf.append("\">0:");
 		buf.append(tupleBuf);
 		buf.append("</relation>");
-		
+
 		writer.println(buf.toString());
 		writer.flush();
 	}
 
-	
-	
+
+
 	/**
 	 * Write a constraint in the XCSP 2.1 format.  Because there is a 1-to-1
 	 * relationship between relations and constraints in this formulation,
 	 * the constraint simply points to the relation and specifies which
 	 * edges are used.
-	 * 
+	 *
 	 * @param writer
 	 * @param pathIndex
 	 */
@@ -594,10 +605,10 @@ public class Path {
 	{
 		// The arity is the number of conflict edges (variables) in the path
 		int arity = 0;
-		
+
 		// Stores the conflict edges used by the path
 		StringBuffer edgeBuf = new StringBuffer();
-		
+
 		for(int e = 0; e < length; e++)
 		{
 			// Check if this edge is a conflict edge
@@ -612,13 +623,13 @@ public class Path {
 					throw new IllegalStateException("Edge " + e + " has illegal " +
 							"id " + edgeIndex);
 				}
-				
+
 				// The first edge is not preceeded by a space
 				if(arity >= 1)
 				{
 					edgeBuf.append(" ");
 				}
-				
+
 				arity++;
 
 				// Add the conflict edge's id
@@ -626,19 +637,19 @@ public class Path {
 				edgeBuf.append(edgeIndex);
 			}
 		} // end loop through all edges in path
-		
+
 		if(arity < 1)
 		{
 			throw new IllegalStateException("Path " + toString() + " is not a conflict path");
 		}
-		
+
 		// Construct the constraint tag
 		StringBuffer buf = new StringBuffer("<constraint name=\"C");
 		buf.append(pathIndex);
-		
+
 		buf.append("\" arity=\"");
 		buf.append(arity);
-		
+
 		// The scope is the list of edge variables in the path
 		buf.append("\" scope=\"");
 		buf.append(edgeBuf);
@@ -646,16 +657,16 @@ public class Path {
 		buf.append("\" reference=\"R");
 		buf.append(pathIndex);
 		buf.append("\"/>");
-		
+
 		writer.println(buf.toString());
 		writer.flush();
 	}
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
 
 	public String toString()
 	{
@@ -667,7 +678,7 @@ public class Path {
 		out += vertices[vertices.length - 1];
 		return out;
 	}
-	
+
 	/**
 	 * Print tab-separated cached statistics in the following order:
 	 * <br>
@@ -687,7 +698,7 @@ public class Path {
 	{
 		StringBuffer buf = new StringBuffer();
 		buf.append(cachedMaxWeight).append("\t");
-		
+
 		buf.append(cachedMaxEdgeWeight).append("\t");
 		buf.append(cachedAvgEdgeWeight).append("\t");
 		buf.append(cachedMinEdgeWeight).append("\t");
@@ -695,15 +706,93 @@ public class Path {
 		buf.append(cachedMaxEdgeUses).append("\t");
 		buf.append(cachedAvgEdgeUses).append("\t");
 		buf.append(cachedMinEdgeUses).append("\t");
-		
+
 		buf.append(cachedMaxDegree).append("\t");
 		buf.append(cachedAvgDegree).append("\t");
 		buf.append(cachedMinDegree);
-		
+
 		return buf.toString();
 	}
 
-	
+
+	/**
+	 * Get this path's score for a particular metric.  The metrics are the same
+	 * as the possible comparators
+	 * @param type the metric
+	 * @return the value of that metric for this path
+	 */
+	public double getMetricValue(String type)
+	{
+		if(type.equalsIgnoreCase("MaxWeight") || type.equalsIgnoreCase("PathWeight"))
+		{
+			return maxWeight();
+		}
+		else if(type.equalsIgnoreCase("MaxEdgeWeight"))
+		{
+			return maxEdgeWeight();
+		}
+		else if(type.equalsIgnoreCase("AvgEdgeWeight"))
+		{
+			return avgEdgeWeight();
+		}
+		else if(type.equalsIgnoreCase("MinEdgeWeight"))
+		{
+			return minEdgeWeight();
+		}
+		else if(type.equalsIgnoreCase("MaxEdgeTargWeight"))
+		{
+			return maxEdgeTargWeight();
+		}
+		else if(type.equalsIgnoreCase("AvgEdgeTargWeight"))
+		{
+			return avgEdgeTargWeight();
+		}
+		else if(type.equalsIgnoreCase("MinEdgeTargWeight"))
+		{
+			return minEdgeTargWeight();
+		}
+		else if(type.equalsIgnoreCase("MaxUses"))
+		{
+			return maxEdgeUses();
+		}
+		else if(type.equalsIgnoreCase("AvgUses"))
+		{
+			return avgEdgeUses();
+		}
+		else if(type.equalsIgnoreCase("MinUses"))
+		{
+			return minEdgeUses();
+		}
+		else if(type.equalsIgnoreCase("MaxSatUses"))
+		{
+			return maxSatEdgeUses();
+		}
+		else if(type.equalsIgnoreCase("AvgSatUses"))
+		{
+			return avgSatEdgeUses();
+		}
+		else if(type.equalsIgnoreCase("MinSatUses"))
+		{
+			return minSatEdgeUses();
+		}
+		else if(type.equalsIgnoreCase("MaxDegree"))
+		{
+			return maxDegree();
+		}
+		else if(type.equalsIgnoreCase("AvgDegree"))
+		{
+			return avgDegree();
+		}
+		else if(type.equalsIgnoreCase("MinDegree"))
+		{
+			return minDegree();
+		}
+		else
+		{
+			throw new IllegalArgumentException(type + " is not a valid Path metric");
+		}
+	}
+
 	/**
 	 * Returns the path's cached maximum weight, the weight it would have if all
 	 * edges along the path are oriented correctly.
@@ -713,36 +802,66 @@ public class Path {
 	{
 		return cachedMaxWeight;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return the maximum edge weight of all edges along the path
 	 */
 	public double maxEdgeWeight()
 	{
 		return cachedMaxEdgeWeight;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return the average edge weight of all edges along the path
 	 */
 	public double avgEdgeWeight()
 	{
 		return cachedAvgEdgeWeight;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return the minimum edge weight of all edges along the path
 	 */
 	public double minEdgeWeight()
 	{
 		return cachedMinEdgeWeight;
 	}
-	
+
 	/**
-	 * 
+	 *
+	 * @return the maximum edge weight of all edges along the path
+	 * and the target
+	 */
+	public double maxEdgeTargWeight()
+	{
+		return cachedMaxEdgeTargWeight;
+	}
+
+	/**
+	 *
+	 * @return the average of all edge weights along the path
+	 * and the target weight
+	 */
+	public double avgEdgeTargWeight()
+	{
+		return cachedAvgEdgeTargWeight;
+	}
+
+	/**
+	 *
+	 * @return the minimum edge weight of all edges along the path
+	 * and the target
+	 */
+	public double minEdgeTargWeight()
+	{
+		return cachedMinEdgeTargWeight;
+	}
+
+	/**
+	 *
 	 * @return the maximum number of times an edge is used in a path
 	 * in the direction it is oriented in this path
 	 */
@@ -750,9 +869,9 @@ public class Path {
 	{
 		return cachedMaxEdgeUses;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return the average number of times an edge is used in a path
 	 * in the direction it is oriented in this path
 	 */
@@ -760,9 +879,9 @@ public class Path {
 	{
 		return cachedAvgEdgeUses;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return the minimum number of times an edge is used in a path
 	 * in the direction it is oriented in this path
 	 */
@@ -770,35 +889,68 @@ public class Path {
 	{
 		return cachedMinEdgeUses;
 	}
-	
+
 	/**
-	 * 
+	 *
+	 * @return the maximum number of times an edge is used in a path
+	 * in the direction it is oriented in this path.  Counts
+	 * satisfied paths only.
+	 */
+	public int maxSatEdgeUses()
+	{
+		return cachedMaxSatEdgeUses;
+	}
+
+	/**
+	 *
+	 * @return the average number of times an edge is used in a path
+	 * in the direction it is oriented in this path.  Counts
+	 * satisfied paths only.
+	 */
+	public double avgSatEdgeUses()
+	{
+		return cachedAvgSatEdgeUses;
+	}
+
+	/**
+	 *
+	 * @return the minimum number of times an edge is used in a path
+	 * in the direction it is oriented in this path.  Counts
+	 * satisfied paths only.
+	 */
+	public int minSatEdgeUses()
+	{
+		return cachedMinSatEdgeUses;
+	}
+
+	/**
+	 *
 	 * @return the maximum vertex degree of all vertices along the path
 	 */
 	public int maxDegree()
 	{
 		return cachedMaxDegree;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return the average vertex degree of all vertices along the path
 	 */
 	public double avgDegree()
 	{
 		return cachedAvgDegree;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return the minimum vertex degree of all vertices along the path
 	 */
 	public int minDegree()
 	{
 		return cachedMinDegree;
 	}
-	
-	
+
+
 	/**
 	 * Get the Comparator that compares based on the cached value specified
 	 * by type.  Make sure the cached statistics have been updated before
@@ -824,6 +976,18 @@ public class Path {
 		{
 			return new MinEdgeWeightComp();
 		}
+		else if(type.equalsIgnoreCase("MaxEdgeTargWeight"))
+		{
+			return new MaxEdgeTargWeightComp();
+		}
+		else if(type.equalsIgnoreCase("AvgEdgeTargWeight"))
+		{
+			return new AvgEdgeTargWeightComp();
+		}
+		else if(type.equalsIgnoreCase("MinEdgeTargWeight"))
+		{
+			return new MinEdgeTargWeightComp();
+		}
 		else if(type.equalsIgnoreCase("MaxUses"))
 		{
 			return new MaxUsesComp();
@@ -835,6 +999,18 @@ public class Path {
 		else if(type.equalsIgnoreCase("MinUses"))
 		{
 			return new MinUsesComp();
+		}
+		else if(type.equalsIgnoreCase("MaxSatUses"))
+		{
+			return new MaxSatUsesComp();
+		}
+		else if(type.equalsIgnoreCase("AvgSatUses"))
+		{
+			return new AvgSatUsesComp();
+		}
+		else if(type.equalsIgnoreCase("MinSatUses"))
+		{
+			return new MinSatUsesComp();
 		}
 		else if(type.equalsIgnoreCase("MaxDegree"))
 		{
@@ -853,7 +1029,7 @@ public class Path {
 			throw new IllegalArgumentException(type + " is not a valid Path Comparator");
 		}
 	}
-	
+
 	/**
 	 * Compare paths by max path weight.
 	 * Note: this comparator imposes orderings that are inconsistent with equals.
@@ -865,7 +1041,7 @@ public class Path {
 			return Double.compare(p1.maxWeight(), p2.maxWeight());
 		}
 	}
-	
+
 	/**
 	 * Compare paths by max edge weight.  Uses max path weight to break ties.
 	 * Note: this comparator imposes orderings that are inconsistent with equals.
@@ -876,7 +1052,7 @@ public class Path {
 		{
 			if(p1.maxEdgeWeight() == p2.maxEdgeWeight())
 			{
-				return Double.compare(p1.maxWeight(), p2.maxWeight()); 
+				return Double.compare(p1.maxWeight(), p2.maxWeight());
 			}
 			else
 			{
@@ -884,7 +1060,7 @@ public class Path {
 			}
 		}
 	}
-	
+
 	/**
 	 * Compare paths by average edge weight.  Uses max path weight to break ties.
 	 * Note: this comparator imposes orderings that are inconsistent with equals.
@@ -895,7 +1071,7 @@ public class Path {
 		{
 			if(p1.avgEdgeWeight() == p2.avgEdgeWeight())
 			{
-				return Double.compare(p1.maxWeight(), p2.maxWeight()); 
+				return Double.compare(p1.maxWeight(), p2.maxWeight());
 			}
 			else
 			{
@@ -903,7 +1079,7 @@ public class Path {
 			}
 		}
 	}
-	
+
 	/**
 	 * Compare paths by min edge weight.  Uses max path weight to break ties.
 	 * Note: this comparator imposes orderings that are inconsistent with equals.
@@ -914,7 +1090,7 @@ public class Path {
 		{
 			if(p1.minEdgeWeight() == p2.minEdgeWeight())
 			{
-				return Double.compare(p1.maxWeight(), p2.maxWeight()); 
+				return Double.compare(p1.maxWeight(), p2.maxWeight());
 			}
 			else
 			{
@@ -922,7 +1098,64 @@ public class Path {
 			}
 		}
 	}
-	
+
+	/**
+	 * Compare paths by max edge and target weight.  Uses max path weight to break ties.
+	 * Note: this comparator imposes orderings that are inconsistent with equals.
+	 */
+	static class MaxEdgeTargWeightComp implements Comparator<Path>
+	{
+		public int compare(Path p1, Path p2)
+		{
+			if(p1.maxEdgeTargWeight() == p2.maxEdgeTargWeight())
+			{
+				return Double.compare(p1.maxWeight(), p2.maxWeight());
+			}
+			else
+			{
+				return Double.compare(p1.maxEdgeTargWeight(), p2.maxEdgeTargWeight());
+			}
+		}
+	}
+
+	/**
+	 * Compare paths by average edge and target weight.  Uses max path weight to break ties.
+	 * Note: this comparator imposes orderings that are inconsistent with equals.
+	 */
+	static class AvgEdgeTargWeightComp implements Comparator<Path>
+	{
+		public int compare(Path p1, Path p2)
+		{
+			if(p1.avgEdgeTargWeight() == p2.avgEdgeTargWeight())
+			{
+				return Double.compare(p1.maxWeight(), p2.maxWeight());
+			}
+			else
+			{
+				return Double.compare(p1.avgEdgeTargWeight(), p2.avgEdgeTargWeight());
+			}
+		}
+	}
+
+	/**
+	 * Compare paths by min edge and target weight.  Uses max path weight to break ties.
+	 * Note: this comparator imposes orderings that are inconsistent with equals.
+	 */
+	static class MinEdgeTargWeightComp implements Comparator<Path>
+	{
+		public int compare(Path p1, Path p2)
+		{
+			if(p1.minEdgeTargWeight() == p2.minEdgeTargWeight())
+			{
+				return Double.compare(p1.maxWeight(), p2.maxWeight());
+			}
+			else
+			{
+				return Double.compare(p1.minEdgeTargWeight(), p2.minEdgeTargWeight());
+			}
+		}
+	}
+
 	/**
 	 * Compare paths by the max number of times an edge is used in all paths
 	 * in the direction this path uses it.  Uses max path weight to break ties.
@@ -935,7 +1168,7 @@ public class Path {
 		{
 			if(p1.maxEdgeUses() == p2.maxEdgeUses())
 			{
-				return Double.compare(p1.maxWeight(), p2.maxWeight()); 
+				return Double.compare(p1.maxWeight(), p2.maxWeight());
 			}
 			else
 			{
@@ -943,7 +1176,7 @@ public class Path {
 			}
 		}
 	}
-	
+
 	/**
 	 * Compare paths by the average number of times an edge is used in all paths
 	 * in the direction this path uses it.  Uses max path weight to break ties.
@@ -956,7 +1189,7 @@ public class Path {
 		{
 			if(p1.avgEdgeUses() == p2.avgEdgeUses())
 			{
-				return Double.compare(p1.maxWeight(), p2.maxWeight()); 
+				return Double.compare(p1.maxWeight(), p2.maxWeight());
 			}
 			else
 			{
@@ -964,7 +1197,7 @@ public class Path {
 			}
 		}
 	}
-	
+
 	/**
 	 * Compare paths by the min number of times an edge is used in all paths
 	 * in the direction this path uses it.  Uses max path weight to break ties.
@@ -977,7 +1210,7 @@ public class Path {
 		{
 			if(p1.minEdgeUses() == p2.minEdgeUses())
 			{
-				return Double.compare(p1.maxWeight(), p2.maxWeight()); 
+				return Double.compare(p1.maxWeight(), p2.maxWeight());
 			}
 			else
 			{
@@ -985,8 +1218,73 @@ public class Path {
 			}
 		}
 	}
-	
-	
+
+	/**
+	 * Compare paths by the max number of times an edge is used in all paths
+	 * in the direction this path uses it.  Uses max path weight to break ties.
+	 * Make sure the cached uses values of the paths are up to date before using.
+	 * Only uses satisfied paths when counting edge uses.
+	 * Note: this comparator imposes orderings that are inconsistent with equals.
+	 */
+	static class MaxSatUsesComp implements Comparator<Path>
+	{
+		public int compare(Path p1, Path p2)
+		{
+			if(p1.maxSatEdgeUses() == p2.maxSatEdgeUses())
+			{
+				return Double.compare(p1.maxWeight(), p2.maxWeight());
+			}
+			else
+			{
+				return p1.maxSatEdgeUses() - p2.maxSatEdgeUses();
+			}
+		}
+	}
+
+	/**
+	 * Compare paths by the average number of times an edge is used in all paths
+	 * in the direction this path uses it.  Uses max path weight to break ties.
+	 * Make sure the cached uses values of the paths are up to date before using.
+	 * Only uses satisfied paths when counting edge uses.
+	 * Note: this comparator imposes orderings that are inconsistent with equals.
+	 */
+	static class AvgSatUsesComp implements Comparator<Path>
+	{
+		public int compare(Path p1, Path p2)
+		{
+			if(p1.avgSatEdgeUses() == p2.avgSatEdgeUses())
+			{
+				return Double.compare(p1.maxWeight(), p2.maxWeight());
+			}
+			else
+			{
+				return Double.compare(p1.avgSatEdgeUses(), p2.avgSatEdgeUses());
+			}
+		}
+	}
+
+	/**
+	 * Compare paths by the min number of times an edge is used in all paths
+	 * in the direction this path uses it.  Uses max path weight to break ties.
+	 * Make sure the cached uses values of the paths are up to date before using.
+	 * Only uses satisfied paths when counting edge uses.
+	 * Note: this comparator imposes orderings that are inconsistent with equals.
+	 */
+	static class MinSatUsesComp implements Comparator<Path>
+	{
+		public int compare(Path p1, Path p2)
+		{
+			if(p1.minSatEdgeUses() == p2.minSatEdgeUses())
+			{
+				return Double.compare(p1.maxWeight(), p2.maxWeight());
+			}
+			else
+			{
+				return p1.minSatEdgeUses() - p2.minSatEdgeUses();
+			}
+		}
+	}
+
 	/**
 	 * Compare paths by max vertex degree.  Uses max path weight to break ties.
 	 * Note: this comparator imposes orderings that are inconsistent with equals.
@@ -997,7 +1295,7 @@ public class Path {
 		{
 			if(p1.maxDegree() == p2.maxDegree())
 			{
-				return Double.compare(p1.maxWeight(), p2.maxWeight()); 
+				return Double.compare(p1.maxWeight(), p2.maxWeight());
 			}
 			else
 			{
@@ -1005,7 +1303,7 @@ public class Path {
 			}
 		}
 	}
-	
+
 	/**
 	 * Compare paths by average vertex degree.  Uses max path weight to break ties.
 	 * Note: this comparator imposes orderings that are inconsistent with equals.
@@ -1016,7 +1314,7 @@ public class Path {
 		{
 			if(p1.avgDegree() == p2.avgDegree())
 			{
-				return Double.compare(p1.maxWeight(), p2.maxWeight()); 
+				return Double.compare(p1.maxWeight(), p2.maxWeight());
 			}
 			else
 			{
@@ -1024,7 +1322,7 @@ public class Path {
 			}
 		}
 	}
-	
+
 	/**
 	 * Compare paths by min vertex degree.  Uses max path weight to break ties.
 	 * Note: this comparator imposes orderings that are inconsistent with equals.
@@ -1035,7 +1333,7 @@ public class Path {
 		{
 			if(p1.minDegree() == p2.minDegree())
 			{
-				return Double.compare(p1.maxWeight(), p2.maxWeight()); 
+				return Double.compare(p1.maxWeight(), p2.maxWeight());
 			}
 			else
 			{
